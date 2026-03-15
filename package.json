@@ -1,0 +1,23 @@
+{
+    "name": "dwlr-backend",
+    "version": "1.0.0",
+    "description": "DWLR Groundwater Monitoring System - Backend API",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js"
+    },
+    "dependencies": {
+        "express": "^5.1.0",
+        "axios": "^1.7.9",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "pg": "^8.13.1",
+        "node-cron": "^3.0.3",
+        "bcryptjs": "^2.4.3",
+        "jsonwebtoken": "^9.0.2",
+        "json2csv": "^6.0.0-alpha.2",
+        "xlsx": "^0.18.5"
+    }
+}

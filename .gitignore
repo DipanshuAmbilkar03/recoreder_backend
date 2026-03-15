@@ -1,0 +1,11 @@
+node_modules/
+.env
+npm-debug.log*
+*.log
+*.txt
+trigger_manual_sync.js
+trigger_historical_sync.js
+sync_locations.json
+add_station_data.js
+check_db.js
+sync/
