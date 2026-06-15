@@ -2,14 +2,7 @@ import axios from "axios";
 
 const WRIS_BASE = process.env.WRIS_API_BASE;
 
-/**
- * Fetch groundwater data from India WRIS API.
- * The API requires a POST request with parameters in the query string.
- *
- * @param {object} params - Query parameters
- * @returns {Array} Array of station reading objects
- */
-export async function fetchGroundwaterData({
+function buildWrisUrl({
     stateName,
     districtName,
     startdate,
@@ -29,20 +22,69 @@ export async function fetchGroundwaterData({
     if (startdate) queryParams.set("startdate", startdate);
     if (enddate) queryParams.set("enddate", enddate);
 
-    const url = `${WRIS_BASE}?${queryParams.toString()}`;
+    return `${WRIS_BASE}?${queryParams.toString()}`;
+}
 
-    console.log(`📡 Fetching WRIS data: POST ${url}`);
+/**
+ * Fetch one page of groundwater data from India WRIS API.
+ *
+ * @param {object} params - Query parameters
+ * @returns {Array} Array of station reading objects
+ */
+export async function fetchGroundwaterData({
+    stateName,
+    districtName,
+    startdate,
+    enddate,
+    page = 0,
+    size = 500,
+} = {}) {
+    if (!WRIS_BASE) {
+        throw new Error("WRIS_API_BASE is not configured");
+    }
 
-    const response = await axios.post(url, null, { timeout: 30000 });
+    const url = buildWrisUrl({ stateName, districtName, startdate, enddate, page, size });
+
+    console.log(`Fetching WRIS data: POST ${url}`);
+
+    const response = await axios.post(url, {}, { timeout: 15000 });
 
     if (response.data?.statusCode !== 200) {
         throw new Error(`WRIS API error: ${response.data?.message || "Unknown"}`);
     }
 
     const records = response.data.data || [];
-    console.log(`📦 Received ${records.length} records for ${districtName || "All"}, ${stateName}`);
+    console.log(`Received ${records.length} records for ${districtName || "All"}, ${stateName || "All"}`);
 
     return records;
+}
+
+/**
+ * Fetch every available page for one state.
+ */
+export async function fetchStateData({ stateName, startdate, enddate, size = 1000, maxPages = 50 } = {}) {
+    const allRecords = [];
+    let page = 0;
+
+    while (page < maxPages) {
+        const records = await fetchGroundwaterData({
+            stateName,
+            startdate,
+            enddate,
+            page,
+            size,
+        });
+
+        if (!records.length) break;
+
+        allRecords.push(...records);
+
+        if (records.length < size) break;
+        page += 1;
+    }
+
+    console.log(`Fetched ${allRecords.length} records for ${stateName}`);
+    return allRecords;
 }
 
 /**
@@ -68,9 +110,8 @@ export async function fetchMultipleRegions(stateDistricts, startdate, enddate) {
                 });
                 allRecords.push(...records);
             } catch (err) {
-                // Skip errors like "No data found" silently for clean logs
                 if (!err.message.includes("No data")) {
-                    console.error(`  ❌ Error fetching ${district}, ${state}: ${err.message}`);
+                    console.error(`Error fetching ${district}, ${state}: ${err.message}`);
                 }
             }
         }

@@ -103,8 +103,8 @@ export async function syncRecordsToDatabase(records) {
             `;
 
             try {
-                await pool.query(query, values);
-                readingsInserted += batch.length;
+                const result = await pool.query(query, values);
+                readingsInserted += result.rowCount || 0;
             } catch (err) {
                 console.error(`  ❌ Bulk reading insert error for ${code}:`, err.message);
             }
