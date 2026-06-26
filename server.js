@@ -7,6 +7,7 @@ import stationRoutes from "./routes/stations.js";
 import analyticsRoutes from "./routes/analytics.js";
 import alertRoutes from "./routes/alerts.js";
 import syncRoutes from "./routes/sync.js";
+import forecastRoutes from "./routes/forecast.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use("/api/stations", stationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/sync", syncRoutes);
+app.use("/api/forecast", forecastRoutes);
 
 // ── 404 handler ──
 app.use((req, res) => {
